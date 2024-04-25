@@ -7,7 +7,11 @@ Created on Fri Apr 16 09:56:54 2021
 """
 import pandas as pd
 import numpy as np
-from progressbar import progressbar
+try:
+    from progressbar import progressbar
+except ImportError:
+    def progressbar(*args, **kwargs):
+        return args[0]
 
 #engine_kwargs= {'nopython':True, 'nogil':False, 'parallel': True}
 def circular_variance(file_path, save_path, window=30, load_key='omni', key='omni_window'):
