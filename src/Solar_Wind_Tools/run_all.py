@@ -2,7 +2,7 @@ from .window import circular_variance, coupling, dipole, time_shift
 from .download import download_omni_1min
 import os
 from datetime import datetime as dt
-def run_all(save_path, omni_path=False, start=20, end=10, start_year=1981, end_year=False, key='omni_window', run=[]):
+def run_all(save_path, omni_path=False, window=60, shift=-10, start_year=1981, end_year=False, key='omni_window', run=[]):
     """
     Run a series of functions on the OMNI dataset and save the results.
 
@@ -53,7 +53,7 @@ def run_all(save_path, omni_path=False, start=20, end=10, start_year=1981, end_y
         else:
             load_key = key
         print('Circular Variance')
-        circular_variance(omni_path, save_path, window=start + end, load_key=load_key, key=key)
+        circular_variance(omni_path, save_path, window=window, load_key=load_key, key=key)
         i += 1
 
     # Run Coupling if specified in run list
@@ -63,7 +63,7 @@ def run_all(save_path, omni_path=False, start=20, end=10, start_year=1981, end_y
         else:
             load_key = key
         print('Coupling')
-        coupling(omni_path, save_path, window=start + end, load_key=key, key=key)
+        coupling(omni_path, save_path, window=window, load_key=key, key=key)
         i += 1
 
     # Run Dipole if specified in run list
@@ -73,7 +73,7 @@ def run_all(save_path, omni_path=False, start=20, end=10, start_year=1981, end_y
         else:
             load_key = key
         print('Dipole')
-        dipole(omni_path, save_path, window=start + end, load_key=key, key=key)
+        dipole(omni_path, save_path, load_key=key, key=key)
         i += 1
 
     # Run Time Shift if specified in run list
@@ -83,5 +83,5 @@ def run_all(save_path, omni_path=False, start=20, end=10, start_year=1981, end_y
         else:
             load_key = key
         print('Time Shift')
-        time_shift(omni_path, save_path, start, end, load_key=key, key=key)
+        time_shift(omni_path, save_path, shift=shift, load_key=key, key=key)
         i += 1

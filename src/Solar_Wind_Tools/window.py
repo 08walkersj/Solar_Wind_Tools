@@ -31,7 +31,6 @@ def circular_variance(file_path, save_path, window=30, load_key='omni', key='omn
     Example:
     >>> circular_variance('input.h5', 'output.h5')
     """
-    window += 1
 
     def sin(theta):
         return np.nanmean(np.sin(theta))**2
@@ -45,18 +44,21 @@ def circular_variance(file_path, save_path, window=30, load_key='omni', key='omn
             return np.nan
         else:
             return np.nansum((X - np.nanmean(X))**2) / (len(X) - 1)
+    def Count(X):
+        return sum(np.isfinite(X))
 
     omni = pd.read_hdf(file_path, key=load_key)
     columns = ['IMF', 'BX_GSE', 'BY_GSM', 'BZ_GSM']
 
     for column in progressbar(columns, max_value=len(columns)):
-        omni[column+'_Var'] = omni[column].rolling(window=window, min_periods=0).apply(Variance, engine='numba', raw=True)
-        omni[column+'_Mean'] = omni[column].rolling(window=window, min_periods=0).apply(np.nanmean, engine='numba', raw=True)
+        omni[column+'_Var'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(Variance, engine='numba', raw=True)
+        omni[column+'_Mean'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
+    omni['points'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(Count, engine='numba', raw=True)
 
     omni['Clock_GSM'] = np.arctan2(omni.BY_GSM, omni.BZ_GSM)
-    omni['Clock_GSM_Mean'] = omni.Clock_GSM.rolling(window=window, min_periods=0).apply(np.nanmean, engine='numba', raw=True)
+    omni['Clock_GSM_Mean'] = omni.Clock_GSM.rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
     
-    tmp = pd.DataFrame({'Theta': np.arctan2(omni['BY_GSM'], omni['BZ_GSM'])}).rolling(window=window, min_periods=0)
+    tmp = pd.DataFrame({'Theta': np.arctan2(omni['BY_GSM'], omni['BZ_GSM'])}).rolling(window=f'{window}min', min_periods=0)
     omni['Circular_Variance_GSM'] = 1 - np.sqrt(tmp.apply(sin, engine='numba', raw=True) + tmp.apply(cos, engine='numba', raw=True))
     
     omni.to_hdf(save_path, key=key)
@@ -79,18 +81,17 @@ def coupling(file_path, save_path, window=30, load_key='omni', key='omni_window'
     Example:
     >>> coupling('input.h5', 'output.h5')
     """
-    window += 1
     data = pd.read_hdf(file_path, key=load_key)
     
     from .Coupling_Functions import newell_coupling_function
 
     data['Newell_Epsilon'] = newell_coupling_function(data.Vx, data.BY_GSM, data.BZ_GSM)
-    data['Newell_Epsilon_Mean'] = data.Newell_Episilon.rolling(window=window, min_periods=0).apply(np.nanmean, engine='numba', raw=True)
+    data['Newell_Epsilon_Mean'] = data.Newell_Epsilon.rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
     
     data.to_hdf(save_path, key=key)
 
 
-def dipole(file_path, save_path, window=30, load_key='omni', key='omni_window'):
+def dipole(file_path, save_path, load_key='omni', key='omni_window'):
     """
     Calculate dipole tilt angle and save results to an HDF file.
 
@@ -116,7 +117,7 @@ def dipole(file_path, save_path, window=30, load_key='omni', key='omni_window'):
     data.to_hdf(save_path, key=key)
 
 
-def time_shift(file_path, save_path, start=20, end=10, load_key='omni', key='omni_window'):
+def time_shift(file_path, save_path, shift, load_key='omni', key='omni_window'):
     """
     Shift mean and variance columns by a specified number of steps and save results to an HDF file.
 
@@ -138,6 +139,6 @@ def time_shift(file_path, save_path, start=20, end=10, load_key='omni', key='omn
     
     for col in data.columns:
         if col.endswith('_Mean') or col.endswith('_Var'):
-            data[col] = data[col].shift(-end)
+            data[col] = data[col].shift(shift)
     
     data.to_hdf(save_path, key=key)
