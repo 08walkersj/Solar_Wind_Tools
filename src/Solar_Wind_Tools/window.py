@@ -138,7 +138,7 @@ def time_shift(file_path, save_path, shift, load_key='omni', key='omni_window'):
     data = pd.read_hdf(file_path, key=load_key)
     
     for col in data.columns:
-        if col.endswith('_Mean') or col.endswith('_Var'):
+        if col.endswith('_Mean') or col.endswith('_Var') or col=='points':
             data[col] = data[col].shift(shift)
     
     data.to_hdf(save_path, key=key)
