@@ -48,7 +48,6 @@ def circular_variance(file_path, save_path, window=30, load_key='omni', key='omn
     def Count(X):
         return sum(np.isfinite(X))
     def SEM(X):
-        # return sem(X, nan_policy='omit')
         n= np.sqrt(np.isfinite(X).sum())
         if not n:
             n=np.nan
@@ -72,32 +71,10 @@ def clock_angle_statistics(file_path, save_path, window=30, load_key='omni', key
     from scipy.stats import directional_stats, bootstrap, circstd
     from functools import partial
     omni = pd.read_hdf(file_path, key=load_key)
-
-    # omni['Clock_GSM_Meanalt'] = omni.Clock_GSM.rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
-    # omni['Clock_GSM_SEMalt'] = omni.Clock_GSM.rolling(window=f'{window}min', min_periods=0).apply(SEM, engine='numba', raw=True)
-    def Clock_std(data):
-        return (((data['BY_GSM_Mean']**2+data['BZ_GSM_Mean']**2)**-.5)*\
-                ((data['BY_GSM_Mean']**2)*(data['BY_GSM_Var']**2)+\
-                 (data['BZ_GSM_Mean']**2)*(data['BZ_GSM_Var']**2)))**.5
-    def arctan2_std(B_y, B_z, std_B_y, std_B_z):
-        # Calculate partial derivatives
-        dtheta_dBy = B_z / (B_y**2 + B_z**2)
-        dtheta_dBz = -B_y / (B_y**2 + B_z**2)
-        
-        # Estimate standard deviation of theta
-        std_theta = np.sqrt((dtheta_dBy**2 * std_B_y**2) + (dtheta_dBz**2 * std_B_z**2))
-        
-        return std_theta
     def Count(X):
         return sum(np.isfinite(X))
 
     def mean_clock_angle(By, Bz, axis):
-        # data= np.array([By, Bz])
-        # res= directional_stats(data.T, normalize=False).mean_direction
-        # return np.arctan2(*res.T)
-        # print(By.shape, '\n', Bz.shape, '...')
-        # print(np.nanmean(By),'\n', np.nanmean(Bz), '...')
-        # print(np.arctan2(np.nanmean(By, axis=axis), np.nanmean(Bz, axis=axis)))
         return np.arctan2(np.nanmean(By, axis=axis), np.nanmean(Bz, axis= axis))
     def sin(theta):
         return np.nanmean(np.sin(theta))**2
@@ -119,25 +96,13 @@ def clock_angle_statistics(file_path, save_path, window=30, load_key='omni', key
                              tmp.apply(cos, engine='numba', raw=True)))/np.sqrt(np.isfinite(tmp.Theta).sum()))\
                              .values[0]
 
-    def mean_clock_wrapper(By, data, col):
-        Bz= data.loc[By.index, [col]].values.reshape(-1)
-        By= By.values
-        ind= (np.isfinite(By))&(np.isfinite(Bz))
-        if not np.sum(ind):
-            return np.nan
-        return mean_clock_angle(By[ind], Bz[ind])
     if not 'points' in omni:
         omni['points'] = omni['BX_GSE'].rolling(window=f'{window}min', min_periods=0).apply(Count, engine='numba', raw=True)
 
     omni['Clock_GSM_Mean'] = np.arctan2(omni.BY_GSM_Mean, omni.BZ_GSM_Mean)
-    # omni['Clock_GSM_Direction_Mean'] = omni['BY_GSM'].rolling(window=f'{window}min', min_periods=0).\
-    #     apply(mean_clock_wrapper, args=(omni, 'BZ_GSM'))
-
-    # omni['Clock_GSM_SEM'] = np.arctan2(omni.BY_GSM_SEM, omni.BZ_GSM_SEM)
     omni['Clock_GSM_SEM']= omni['BY_GSM'].rolling(window=f'{window}min', min_periods=0).\
         apply(clock_SEM, args=(omni, 'BZ_GSM'))
-    # omni['Clock_GSM_STD']= arctan2_std(omni['BY_GSM_Mean'], omni['BZ_GSM_Mean'], omni['BY_GSM_Var']**.5, omni['BZ_GSM_Var']**.5)
-    # omni['Clock_GSM_STDalt']= Clock_std(omni)
+
     omni['Clock_GSM_STD']= omni['Clock_GSM'].rolling(window=f'{window}min', min_periods=0).apply(circstd)
     omni.to_hdf(save_path, key=key)
 
