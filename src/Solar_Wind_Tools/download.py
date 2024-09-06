@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jan 27 12:29:06 2020
 
-@author: aohma (Download function is based on code by Anders Ohma)
+"""
+(Download function is based on code by Anders Ohma: GitHub aohma)
 """
 
 import cdflib # pip install cdflib
@@ -85,5 +82,4 @@ def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, pat
                 omni[['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']] = omni[
                     ['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']].astype('float64')
                 omni.to_hdf(path, key='omni', mode='a', append=True, format='t', data_columns=True)
-                # cdf_file.close()
                 os.remove('omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')

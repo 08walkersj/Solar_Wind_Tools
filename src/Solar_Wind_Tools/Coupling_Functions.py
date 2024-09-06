@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 15 10:41:07 2021
-
-@author: simon
-"""
 import numpy as np
 def newell_coupling_function(Vx, By, Bz):
     """
