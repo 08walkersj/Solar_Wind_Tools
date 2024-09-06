@@ -95,7 +95,7 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
     omni['Clock_GSM_Median'] = np.arctan2(omni.BY_GSM_Median, omni.BZ_GSM_Median)
 
     # Save the results to the output HDF file
-    omni.to_hdf(save_path, key=key)
+    omni.to_hdf(save_path, key=key, format='t', data_columns=True)
 
 
 def coupling(file_path, save_path, window=30, load_key='omni', key='omni_window'):
@@ -122,7 +122,7 @@ def coupling(file_path, save_path, window=30, load_key='omni', key='omni_window'
     data['Newell_Epsilon'] = newell_coupling_function(data.Vx, data.BY_GSM, data.BZ_GSM)
     data['Newell_Epsilon_Mean'] = data.Newell_Epsilon.rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
     
-    data.to_hdf(save_path, key=key)
+    data.to_hdf(save_path, key=key, format='t', data_columns=True)
 
 
 def dipole(file_path, save_path, load_key='omni', key='omni_window'):
@@ -148,7 +148,7 @@ def dipole(file_path, save_path, load_key='omni', key='omni_window'):
     years = data.index.year
     data['Dipole_Tilt'] = np.concatenate([Dipole(year).tilt(data.index.values[years==year]) for year in np.unique(years)])
     
-    data.to_hdf(save_path, key=key)
+    data.to_hdf(save_path, key=key, format='t', data_columns=True)
 
 
 def time_shift(file_path, save_path, shift, load_key='omni', key='omni_window'):
@@ -174,4 +174,4 @@ def time_shift(file_path, save_path, shift, load_key='omni', key='omni_window'):
         if col.endswith('_Mean') or col.endswith('_Var') or col.endswith('_STD') or col.endswith('_SEM') or col=='points' or col=='Circular_Variance_GSM':
             data[col] = data[col].shift(shift)
     
-    data.to_hdf(save_path, key=key)
+    data.to_hdf(save_path, key=key, format='t', data_columns=True)
