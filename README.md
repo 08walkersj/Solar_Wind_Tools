@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13735488.svg)](https://doi.org/10.5281/zenodo.13735488)
+
 # Solar Wind Tools
 
 ![alt text](https://github.com/08walkersj/Solar_Wind_Tools/blob/master/Development_Code/solar_wind.gif "Image Credit: NASA's Goddard Space Flight Center")
@@ -12,6 +14,3 @@ OMNI: King, J. H. and Papitashvili, N. E. (2005). Solar wind spatial scales in a
 ### Current Limitations
 - Download uses wget. For use for windows os urlib should be implemented
 - We have only implemented the newell coupling function. Please add new ones such as Milan so others can use it.
-
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13735488.svg)](https://doi.org/10.5281/zenodo.13735488)
