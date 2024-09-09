@@ -1,6 +1,6 @@
 # Solar Wind Tools
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png](https://github.com/08walkersj/Solar_Wind_Tools/blob/master/Development_Code/solar_wind.gif "")
+![alt text](https://github.com/08walkersj/Solar_Wind_Tools/blob/master/Development_Code/solar_wind.gif "")
 
 This is a repostiory dedicate to downloading and processing of solar wind data for space physics applications and studies.\
 We base this code around the OMNI 1-min data but tools should be applicable in other ways.
