@@ -7,14 +7,51 @@ import warnings
 warnings.simplefilter('always', ImportWarning)
 
 class ArgumentError(Exception):
-     pass
+    """
+    Custom exception class to handle argument-related errors.
+    Raised when the function receives invalid input.
+    """
+    pass
+
 def format_elapsed_time(seconds):
-    days = seconds // 86400
+    """
+    Converts a given time duration in seconds into a formatted string 
+    representing days, hours, minutes, and seconds.
+
+    Args:
+        seconds (int): The time duration in seconds.
+
+    Returns:
+        str: A formatted string in the format "XDays: XHrs: XMins: XSecs", 
+        where X represents the respective time unit.
+
+    Raises:
+        ArgumentError: If the input 'seconds' is not an integer or is negative.
+    """
+
+    # Check if input is a valid non-negative integer
+    if not isinstance(seconds, int) or seconds < 0:
+        raise ArgumentError("Input should be a non-negative integer representing seconds.")
+
+    # Calculate the number of days in the given seconds
+    days = seconds // 86400  # 1 day = 86400 seconds
+
+    # Update the remaining seconds after extracting the days
     seconds %= 86400
-    hours = seconds // 3600
+
+    # Calculate the number of hours in the remaining seconds
+    hours = seconds // 3600  # 1 hour = 3600 seconds
+
+    # Update the remaining seconds after extracting the hours
     seconds %= 3600
-    minutes = seconds // 60
+
+    # Calculate the number of minutes in the remaining seconds
+    minutes = seconds // 60  # 1 minute = 60 seconds
+
+    # Update the remaining seconds after extracting the minutes
     seconds %= 60
+
+    # Return the formatted time as a string
     return f"{days}Days:{hours}Hrs:{minutes}Mins:{seconds}Secs"
 
 def run_all(save_path, omni_path=False, window=30, shift=10, start_year=1981, end_year=False, key='omni_window', run=[]):
