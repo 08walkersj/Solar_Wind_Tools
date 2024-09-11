@@ -98,7 +98,7 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
     omni.to_hdf(save_path, key=key, format='t', data_columns=True)
 
 
-def coupling(file_path, save_path, window=30, load_key='omni', key='omni_window'):
+def coupling(file_path, save_path, window=False, load_key='omni', key='omni_window'):
     """
     Calculate Newell coupling function and its mean in a rolling window and save results to an HDF file.
 
@@ -120,7 +120,8 @@ def coupling(file_path, save_path, window=30, load_key='omni', key='omni_window'
     from .Coupling_Functions import newell_coupling_function
 
     data['Newell_Epsilon'] = newell_coupling_function(data.Vx, data.BY_GSM, data.BZ_GSM)
-    data['Newell_Epsilon_Mean'] = data.Newell_Epsilon.rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
+    if window:
+        data['Newell_Epsilon_Mean'] = data.Newell_Epsilon.rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
     
     data.to_hdf(save_path, key=key, format='t', data_columns=True)
 
