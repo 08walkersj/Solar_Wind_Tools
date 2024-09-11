@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13735488.svg)](https://doi.org/10.5281/zenodo.13735488)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13749003.svg)](https://doi.org/10.5281/zenodo.13749003)
 
 # Solar Wind Tools
 
