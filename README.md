@@ -12,5 +12,4 @@ OMNI: King, J. H. and Papitashvili, N. E. (2005). Solar wind spatial scales in a
 
 ## Please implement extra changes and suggestions in a fork and let us know
 ### Current Limitations
-- Download uses wget. For use for windows os "urlib" should be implemented
 - We have only implemented the newell coupling function. Please add new ones such as Milan so others can use it.
