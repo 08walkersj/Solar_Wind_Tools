@@ -32,6 +32,40 @@ def validinput(inputstr, positive_answer, negative_answer):
         print('Invalid response should be either ' + str(positive_answer) + ' or ' + str(negative_answer))
         return validinput(inputstr, positive_answer, negative_answer)
 
+from platform import system
+# If Linux download uses wget
+if 'Linux' in system():
+    def download(url, filename):
+        return os.system(f'wget {url}')
+# If not Linux use urllib.request.urlretrieve
+else:
+    from urllib.request import urlretrieve
+    import sys
+    def download_progress_hook(count, block_size, total_size):
+        """
+        Report hook to display a progress bar for downloading.
+        
+        :param count: Current block number being downloaded.
+        :param block_size: Size of each block (in bytes).
+        :param total_size: Total size of the file (in bytes).
+        """
+        # Calculate percentage of the download
+        downloaded_size = count * block_size
+        percentage = min(100, downloaded_size * 100 / total_size)
+        
+        # Create a simple progress bar
+        progress_bar = f"\rDownloading: {percentage:.2f}% [{downloaded_size}/{total_size} bytes]"
+        
+        # Update the progress on the same line
+        sys.stdout.write(progress_bar)
+        sys.stdout.flush()
+
+        # When download is complete
+        if downloaded_size >= total_size:
+            print("\nDownload complete!")
+    def download(url, file_name):
+        print(file_name)
+        return urlretrieve(url, file_name, reporthook=download_progress_hook)
 
 def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, path='./omni_1min.h5'):
     """
@@ -67,10 +101,9 @@ def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, pat
     for y in years:
         for m in months:
             if not ((y == years[0]) & (int(m) < monthFirstYear)) | ((y == years[-1]) & (int(m) > monthLastYear)):
-                command = 'wget https://cdaweb.gsfc.nasa.gov/sp_phys/data/omni/hro_1min/' + str(y) + \
-                          '/omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf'
-                os.system(command)
-
+                
+                download('https://cdaweb.gsfc.nasa.gov/sp_phys/data/omni/hro_1min/' + str(y) + \
+                          '/omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf', 'omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')
                 omni = pd.DataFrame()
                 cdf_file = cdflib.CDF('omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')
                 varlist = cdf_file.cdf_info().zVariables
