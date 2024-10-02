@@ -14,4 +14,4 @@ OMNI: King, J. H. and Papitashvili, N. E. (2005). Solar wind spatial scales in a
 ### Current Limitations
 - We have only implemented the newell coupling function. Please add new ones such as Milan so others can use it.
 
-## To do (list of possible new developments to do)
+## To do (list of possible new developments to do
