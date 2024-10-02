@@ -7,6 +7,8 @@ import cdflib # pip install cdflib
 import pandas as pd
 import numpy as np
 import os
+import glob
+import shutil
 def validinput(inputstr, positive_answer, negative_answer):
     """
     Prompt the user for a valid input and return a boolean based on the response.
@@ -36,7 +38,7 @@ from platform import system
 # If Linux download uses wget
 if 'Linux' in system():
     def download(url, filename):
-        return os.system(f'wget {url}')
+        return os.system(f'wget {url} -O {filename}')
 # If not Linux use urllib.request.urlretrieve
 else:
     from urllib.request import urlretrieve
@@ -67,7 +69,7 @@ else:
         print(file_name)
         return urlretrieve(url, file_name, reporthook=download_progress_hook)
 
-def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, path='./omni_1min.h5'):
+def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, path='./omni_1min.h5', parallel=True):
     """
     Download OMNI 1min data and store it in an HDF file.
 
@@ -77,7 +79,8 @@ def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, pat
     - monthFirstYear (int, optional): First month to include for the first year. Default is 1.
     - monthLastYear (int, optional): Last month to include for the last year. Default is 12.
     - path (str, optional): Path to save the HDF file. Default is './omni_1min.h5'.
-
+    - parallel (bool, optional): enables parallel download to improve download speed. Default is True
+ 
     Raises:
     - ValueError: If fromYear is less than 1981.
                   If the file already exists and the user chooses not to continue.
@@ -97,22 +100,35 @@ def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, pat
     months = []
     for i in np.arange(1, 13, 1):
         months.append('%02i' % i)
-
+    urls= []
     for y in years:
         for m in months:
             if not ((y == years[0]) & (int(m) < monthFirstYear)) | ((y == years[-1]) & (int(m) > monthLastYear)):
-                
-                download('https://cdaweb.gsfc.nasa.gov/sp_phys/data/omni/hro_1min/' + str(y) + \
-                          '/omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf', 'omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')
-                omni = pd.DataFrame()
-                cdf_file = cdflib.CDF('omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')
-                varlist = cdf_file.cdf_info().zVariables
-                for v in varlist:
-                    omni[v] = cdf_file.varget(v)
-                    fillval = cdf_file.varattsget(v)['FILLVAL']
-                    omni[v] = omni[v].replace(fillval, np.nan)
-                omni.index = pd.to_datetime(cdflib.cdfepoch.unixtime(cdf_file.varget('Epoch')), unit='s')
-                omni[['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']] = omni[
-                    ['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']].astype('float64')
-                omni.to_hdf(path, key='omni', mode='a', append=True, format='t', data_columns=True)
-                os.remove('omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')
+                urls.append('https://cdaweb.gsfc.nasa.gov/sp_phys/data/omni/hro_1min/' + str(y) + \
+                          '/omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf')
+                # file= 'omni_hro_1min_' + str(y) + str(m) + '01_v01.cdf'
+
+
+    os.makedirs('./omni_tempfiles/', exist_ok=True)
+    if parallel:
+        from joblib import Parallel, delayed
+        download_args = [(url, './omni_tempfiles/'+url.split('/')[-1]) for url in urls]
+        Parallel(n_jobs=12, backend='threading')(delayed(download)(*args) for args in download_args)
+    else:
+        for url in urls:
+            download(url, './omni_tempfiles/'+url.split('/')[-1])
+    files = glob.glob('./omni_tempfiles/*.cdf')
+    files.sort()
+    for file in files:
+        omni = pd.DataFrame()
+        cdf_file = cdflib.CDF(file)
+        varlist = cdf_file.cdf_info().zVariables
+        for v in varlist:
+            omni[v] = cdf_file.varget(v)
+            fillval = cdf_file.varattsget(v)['FILLVAL']
+            omni[v] = omni[v].replace(fillval, np.nan)
+        omni.index = pd.to_datetime(cdflib.cdfepoch.unixtime(cdf_file.varget('Epoch')), unit='s')
+        omni[['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']] = omni[
+            ['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']].astype('float64')
+        omni.to_hdf(path, key='omni', mode='a', append=True, format='t', data_columns=True)
+    shutil.rmtree('./omni_tempfiles')
