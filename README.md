@@ -15,4 +15,3 @@ OMNI: King, J. H. and Papitashvili, N. E. (2005). Solar wind spatial scales in a
 - We have only implemented the newell coupling function. Please add new ones such as Milan so others can use it.
 
 ## To do (list of possible new developments to do)
-- Speed up omni download with parallel downloads. Rather than appending to HDF one file at a time batch download multiple files in parallel and append to the HDF file.
