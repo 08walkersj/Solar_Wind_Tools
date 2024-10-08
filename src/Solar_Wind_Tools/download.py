@@ -132,3 +132,4 @@ def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, pat
             ['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']].astype('float64')
         omni.to_hdf(path, key='omni', mode='a', append=True, format='t', data_columns=True)
     shutil.rmtree('./omni_tempfiles')
+    return path
