@@ -54,7 +54,7 @@ def format_elapsed_time(seconds):
     # Return the formatted time as a string
     return f"{days}Days:{hours}Hrs:{minutes}Mins:{seconds}Secs"
 
-def run_all(save_path, omni_path=False, window=30, shift=10, start_year=1981, end_year=False, key='omni_window', run=[]):
+def run_all(save_path, omni_path=False, window=30, shift=10, start_year=1981, end_year=False, key='omni_window', run=[], stats_columns= ['IMF', 'BX_GSE', 'BY_GSM', 'BZ_GSM']):
     """
     Run a series of functions on the OMNI dataset and save the results.
 
@@ -67,6 +67,7 @@ def run_all(save_path, omni_path=False, window=30, shift=10, start_year=1981, en
     - end_year (int, optional): End year for downloading the OMNI dataset. If not provided, it uses the current year.
     - key (str, optional): Key for the windowed data from the HDF5 files.
     - run (list, optional): List of functions to run. Default is ['Download', 'Statistics', 'Coupling', 'Dipole', 'Time Shift'].
+    - stats_columns (list, optional): columns to calculate statistics for. Only used when run includes Statistics. Default is ['IMF', 'BX_GSE', 'BY_GSM', 'BZ_GSM']
 
     Returns:
     None
@@ -108,7 +109,7 @@ def run_all(save_path, omni_path=False, window=30, shift=10, start_year=1981, en
             load_key = key
         print('Statistics')
         start_time = time.time()
-        statistics(omni_path, save_path, window=window, load_key=load_key, key=key)
+        statistics(omni_path, save_path, window=window, load_key=load_key, key=key, columns=stats_columns)
         i += 1
         end_time = time.time()
         elapsed_time = end_time - start_time

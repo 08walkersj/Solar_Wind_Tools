@@ -6,7 +6,7 @@ try:
 except ImportError:
     def progressbar(*args, **kwargs):
         return args[0]
-def statistics(file_path, save_path, window=30, load_key='omni', key='omni_window'):
+def statistics(file_path, save_path, window=30, load_key='omni', key='omni_window', columns = ['IMF', 'BX_GSE', 'BY_GSM', 'BZ_GSM']):
     """
     Calculate the mean, median, variance and standard error of the mean for magnetic field components and clock angle in a rolling window and save results to an HDF file.
 
@@ -16,6 +16,7 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
     - window (int, optional): Size of the rolling window for calculating variance and mean. Default is 30 minutes.
     - load_key (str, optional): Key to load the data from the input HDF file. Default is 'omni'.
     - key (str, optional): Key to save the data in the output HDF file. Default is 'omni_window'.
+    - columns (list, optional): columns to calculate statistics for. Default is ['IMF', 'BX_GSE', 'BY_GSM', 'BZ_GSM']
 
     Returns:
     None
@@ -53,7 +54,7 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
         """
         Counts the number of finite values in X.
         """
-        return sum(np.isfinite(X))
+        return np.sum(np.isfinite(X))
     
     def SEM(X):
         """
@@ -66,7 +67,6 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
 
     # Load the data from the HDF file
     omni = pd.read_hdf(file_path, key=load_key)
-    columns = ['IMF', 'BX_GSE', 'BY_GSM', 'BZ_GSM']
 
     # Calculate variance, mean, and SEM for each column in a rolling window
     for column in progressbar(columns, max_value=len(columns)):
@@ -74,9 +74,8 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
         omni[column + '_Mean'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(np.nanmean, engine='numba', raw=True)
         omni[column + '_Median'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(np.nanmedian, engine='numba', raw=True)
         omni[column + '_SEM'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(SEM, engine='numba', raw=True)
-    
-    # Add a column for the number of valid points in each rolling window
-    omni['points'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(Count, engine='numba', raw=True)
+        # Add a column for the number of valid points in each rolling window
+        omni[f'points_{column}'] = omni[column].rolling(window=f'{window}min', min_periods=0).apply(Count, engine='numba', raw=True)
 
     # Calculate the clock angle for GSM coordinates
     omni['Clock_GSM'] = np.arctan2(omni.BY_GSM, omni.BZ_GSM)
@@ -86,7 +85,7 @@ def statistics(file_path, save_path, window=30, load_key='omni', key='omni_windo
     omni['Circular_Variance_GSM'] = 1 - np.sqrt(tmp.apply(sin, engine='numba', raw=True) + tmp.apply(cos, engine='numba', raw=True))
 
     # Calculate the standard error of the mean for the GSM clock angle
-    omni['Clock_GSM_SEM']= np.rad2deg(np.sqrt(omni['Circular_Variance_GSM'])/np.sqrt(omni['points']))
+    omni['Clock_GSM_SEM']= np.rad2deg(np.sqrt(omni['Circular_Variance_GSM'])/np.sqrt(omni['points_BY_GSM']))
 
     # Calculate the mean of the GSM clock angle
     omni['Clock_GSM_Mean'] = np.arctan2(omni.BY_GSM_Mean, omni.BZ_GSM_Mean)
