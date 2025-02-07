@@ -128,8 +128,9 @@ def download_omni_1min(fromYear, toYear, monthFirstYear=1, monthLastYear=12, pat
             fillval = cdf_file.varattsget(v)['FILLVAL']
             omni[v] = omni[v].replace(fillval, np.nan)
         omni.index = pd.to_datetime(cdflib.cdfepoch.unixtime(cdf_file.varget('Epoch')), unit='s')
-        omni[['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']] = omni[
-            ['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX']].astype('float64')
+        # Conversion to float64 allows NAN values to exist. Normally they are int32.
+        omni[['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX', 'SYM_D', 'SYM_H', 'ASY_D', 'ASY_H']] = omni[
+            ['AE_INDEX', 'AL_INDEX', 'AU_INDEX', 'PC_N_INDEX', 'SYM_D', 'SYM_H', 'ASY_D', 'ASY_H']].astype('float64')
         omni.to_hdf(path, key='omni', mode='a', append=True, format='t', data_columns=True)
     shutil.rmtree('./omni_tempfiles')
     return path
